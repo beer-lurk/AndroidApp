@@ -1,19 +1,32 @@
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <ListView
-        android:id="@+id/main_list"
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <EditText
+        android:id="@+id/edit"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <TextView
-        android:id="@+id/empty_view"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="I'm empty"/>
+        android:hint="Type beer type or something"/>
 
-</FrameLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/main_list"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:id="@+id/empty_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="I'm empty"/>
+
+    </FrameLayout>
+
+</LinearLayout>

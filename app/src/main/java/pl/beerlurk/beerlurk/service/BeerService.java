@@ -32,7 +32,7 @@ public final class BeerService {
     }
 
     public Observable<List<DistancedBeerLocation>> call(String beerName, final Location myLocation) {
-        return beerApi.call()
+        return beerApi.call(beerName)
                 .flatMapIterable(new Func1<BeerLocationsWrapper, Iterable<? extends BeerLocation>>() {
                     @Override
                     public Iterable<? extends BeerLocation> call(BeerLocationsWrapper beerLocationsWrapper) {

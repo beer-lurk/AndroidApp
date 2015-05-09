@@ -5,7 +5,11 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -37,9 +41,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ListView listView = (ListView) findViewById(R.id.main_list);
-        listView.setEmptyView(findViewById(R.id.empty_view));
+        final TextView emptyView = (TextView) findViewById(R.id.empty_view);
+        emptyView.setText("Try to search for something");
+        listView.setEmptyView(emptyView);
+        EditText editText = (EditText) findViewById(R.id.edit);
+        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                String search = v.getText().toString().trim();
+                if (search.length() > 0) {
+                    v.setHint("Last search: " + search);
+                    v.setText(null);
+                    emptyView.setText("Searching...");
+                    doCall(search);
+                    return true;
+                }
+                return false;
+            }
+        });
         EventBus.getDefault().register(this);
-        doCall();
     }
 
     @SuppressWarnings("unused")
@@ -56,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
-    private void doCall() {
+    private void doCall(String search) {
         Location myLocation = new Location("my");
         myLocation.setLatitude(52.2237465);
         myLocation.setLongitude(20.9476116);
@@ -72,10 +92,11 @@ public class MainActivity extends AppCompatActivity {
         GeocodeApi geocodeApi = adapter.create(GeocodeApi.class);
         new BeerService(new BeerApi() {
             @Override
-            public Observable<BeerLocationsWrapper> call() {
+            public Observable<BeerLocationsWrapper> call(String ignore) {
                 return Observable.just(Factory.create());
             }
-        }, matrixApi, geocodeApi).call("beer", myLocation)
+        }, matrixApi, geocodeApi)
+                .call(search, myLocation)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<DistancedBeerLocation>>() {
 
@@ -83,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
                     public void call(List<DistancedBeerLocation> distancedBeerLocations) {
                         Log.e("tag", "count: " + distancedBeerLocations.size());
                         Log.e("tag", distancedBeerLocations + "");
+                        TextView emptyView = (TextView) findViewById(R.id.empty_view);
+                        emptyView.setText("Found nothing.");
                         data = distancedBeerLocations;
                         showList();
                     }
@@ -90,6 +113,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void call(Throwable throwable) {
                         Log.e("tag", "error", throwable);
+                        TextView emptyView = (TextView) findViewById(R.id.empty_view);
+                        emptyView.setText("Search failed.");
                     }
                 });
     }

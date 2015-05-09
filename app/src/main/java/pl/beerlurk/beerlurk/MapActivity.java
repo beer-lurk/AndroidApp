@@ -91,7 +91,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
         GeocodeApi geocodeApi = adapter.create(GeocodeApi.class);
         new BeerService(new BeerApi() {
             @Override
-            public Observable<BeerLocationsWrapper> call() {
+            public Observable<BeerLocationsWrapper> call(String beerName) {
                 return Observable.just(Factory.create());
             }
         }, matrixApi, geocodeApi).call("beer", myLocation)
