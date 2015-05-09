@@ -20,6 +20,7 @@ android {
 }
 
 dependencies {
+    provided 'org.projectlombok:lombok:1.16.4'
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
