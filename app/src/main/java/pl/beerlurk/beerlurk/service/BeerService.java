@@ -86,7 +86,12 @@ public final class BeerService {
                         return getAddressLocation(distancedBeerLocation);
                     }
                 })
-                .toList();
+                .toSortedList(new Func2<DistancedBeerLocation, DistancedBeerLocation, Integer>() {
+                    @Override
+                    public Integer call(DistancedBeerLocation distancedBeerLocation, DistancedBeerLocation distancedBeerLocation2) {
+                        return compareByDistance(distancedBeerLocation, distancedBeerLocation2);
+                    }
+                });
     }
 
     private String concatenateAddresses(List<BeerLocation> beerLocations) {
@@ -138,7 +143,7 @@ public final class BeerService {
                 .zipWith(beerLocations, new Func2<Distance, BeerLocation, DistancedBeerLocation>() {
                     @Override
                     public DistancedBeerLocation call(Distance distance, BeerLocation beerLocation) {
-                        return new DistancedBeerLocation(distance.getValue(), distance.getText(), beerLocation);
+                        return new DistancedBeerLocation(distance != null ? distance.getValue() : 0, distance != null ? distance.getText() : "", beerLocation);
                     }
                 })
                 .toList();
