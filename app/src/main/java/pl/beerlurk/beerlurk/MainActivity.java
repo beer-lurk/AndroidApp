@@ -1,6 +1,7 @@
 package pl.beerlurk.beerlurk;
 
 import android.location.Location;
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,7 +25,6 @@ import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
 import rx.Observable;
 import rx.functions.Action1;
-
 
 public class MainActivity extends ActionBarActivity {
 
@@ -52,6 +52,8 @@ public class MainActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             doCall();
             return true;
+        } else if (id == R.id.select_location) {
+            startActivity(new Intent(this, MapActivity.class));
         }
 
         return super.onOptionsItemSelected(item);

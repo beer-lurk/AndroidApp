@@ -2,11 +2,28 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pl.beerlurk.beerlurk" >
 
-    <application
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- The following two permissions are not required to use
+         Google Maps Android API v2, but are recommended. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+   <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+       <meta-data
+           android:name="com.google.android.gms.version"
+           android:value="@integer/google_play_services_version" />
+
+       <meta-data
+           android:name="com.google.android.geo.API_KEY"
+           android:value="AIzaSyCaIn3W9JtGcdj8z1-HCsV7hafEVYbtfwA"/>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -15,6 +32,11 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".MapActivity"
+            android:label="@string/app_name" >
         </activity>
     </application>
 
