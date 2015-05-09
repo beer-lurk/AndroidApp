@@ -50,36 +50,8 @@ public final class BeerService {
                     @Override
                     public Observable<List<DistancedBeerLocation>> call(List<BeerLocation> beerLocations) {
                         String origin = myLocation.getLatitude() + "," + myLocation.getLongitude();
-                        List<String> locations = new ArrayList<>();
-                        for (BeerLocation l : beerLocations) {
-                            String addressWithName = addressFromLocation(l);
-                            locations.add(addressWithName);
-                        }
-                        String destinations = TextUtils.join("|", locations);
-                        return matrixApi.call(origin, destinations)
-                                .flatMapIterable(new Func1<MatrixData, Iterable<Integer>>() {
-                                    @Override
-                                    public Iterable<Integer> call(MatrixData matrixData) {
-                                        List<Integer> distances = new ArrayList<>();
-                                        for (Row row : matrixData.getRows()) {
-                                            for (Element element : row.getElements()) {
-                                                if (element.getDuration() != null) {
-                                                    distances.add(element.getDuration().getValue());
-                                                } else {
-                                                    distances.add(0);
-                                                }
-                                            }
-                                        }
-                                        return distances;
-                                    }
-                                })
-                                .zipWith(beerLocations, new Func2<Integer, BeerLocation, DistancedBeerLocation>() {
-                                    @Override
-                                    public DistancedBeerLocation call(Integer distance, BeerLocation beerLocation) {
-                                        return new DistancedBeerLocation(distance, beerLocation);
-                                    }
-                                })
-                                .toList();
+                        String destinations = concatenateAddresses(beerLocations);
+                        return mergeWithDistanceMatrix(beerLocations, origin, destinations);
                     }
                 })
                 .flatMapIterable(new Func1<List<DistancedBeerLocation>, Iterable<DistancedBeerLocation>>() {
@@ -97,15 +69,7 @@ public final class BeerService {
                 .toSortedList(new Func2<DistancedBeerLocation, DistancedBeerLocation, Integer>() {
                     @Override
                     public Integer call(DistancedBeerLocation distancedBeerLocation, DistancedBeerLocation distancedBeerLocation2) {
-                        int d1 = distancedBeerLocation.getDistance();
-                        int d2 = distancedBeerLocation2.getDistance();
-                        if (d1 == d2) {
-                            return 0;
-                        } else if (d1 < d2) {
-                            return -1;
-                        } else {
-                            return 1;
-                        }
+                        return compareByDistance(distancedBeerLocation, distancedBeerLocation2);
                     }
                 })
                 .flatMapIterable(new Func1<List<DistancedBeerLocation>, Iterable<DistancedBeerLocation>>() {
@@ -118,23 +82,79 @@ public final class BeerService {
                 .flatMap(new Func1<DistancedBeerLocation, Observable<DistancedBeerLocation>>() {
                     @Override
                     public Observable<DistancedBeerLocation> call(final DistancedBeerLocation distancedBeerLocation) {
-                        return geocodeApi.call(addressFromLocation(distancedBeerLocation.getBeerLocation()))
-                                .map(new Func1<ResultsWrapper, DistancedBeerLocation>() {
-                                    @Override
-                                    public DistancedBeerLocation call(ResultsWrapper resultsWrapper) {
-                                        Geometry geometry = resultsWrapper.getResults().get(0).getGeometry();
-                                        double lat = geometry.getLocation().getLat();
-                                        double lng = geometry.getLocation().getLng();
-                                        Location location = new Location("beer");
-                                        location.setLatitude(lat);
-                                        location.setLongitude(lng);
-                                        distancedBeerLocation.setLocation(location);
-                                        return distancedBeerLocation;
-                                    }
-                                });
+                        return getAddressLocation(distancedBeerLocation);
                     }
                 })
                 .toList();
+    }
+
+    private String concatenateAddresses(List<BeerLocation> beerLocations) {
+        List<String> locations = new ArrayList<>();
+        for (BeerLocation l : beerLocations) {
+            String addressWithName = addressFromLocation(l);
+            locations.add(addressWithName);
+        }
+        return TextUtils.join("|", locations);
+    }
+
+    private Integer compareByDistance(DistancedBeerLocation distancedBeerLocation, DistancedBeerLocation distancedBeerLocation2) {
+        int d1 = distancedBeerLocation.getDistance();
+        int d2 = distancedBeerLocation2.getDistance();
+        if (d1 == d2) {
+            return 0;
+        } else if (d1 < d2) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+
+    private Observable<DistancedBeerLocation> getAddressLocation(final DistancedBeerLocation distancedBeerLocation) {
+        return geocodeApi.call(addressFromLocation(distancedBeerLocation.getBeerLocation()))
+                .map(new Func1<ResultsWrapper, DistancedBeerLocation>() {
+                    @Override
+                    public DistancedBeerLocation call(ResultsWrapper resultsWrapper) {
+                        Geometry geometry = resultsWrapper.getResults().get(0).getGeometry();
+                        double lat = geometry.getLocation().getLat();
+                        double lng = geometry.getLocation().getLng();
+                        Location location = new Location("beer");
+                        location.setLatitude(lat);
+                        location.setLongitude(lng);
+                        distancedBeerLocation.setLocation(location);
+                        return distancedBeerLocation;
+                    }
+                });
+    }
+
+    private Observable<List<DistancedBeerLocation>> mergeWithDistanceMatrix(List<BeerLocation> beerLocations, String origin, String destinations) {
+        return matrixApi.call(origin, destinations)
+                .flatMapIterable(new Func1<MatrixData, Iterable<Integer>>() {
+                    @Override
+                    public Iterable<Integer> call(MatrixData matrixData) {
+                        return getDistancesFlattened(matrixData);
+                    }
+                })
+                .zipWith(beerLocations, new Func2<Integer, BeerLocation, DistancedBeerLocation>() {
+                    @Override
+                    public DistancedBeerLocation call(Integer distance, BeerLocation beerLocation) {
+                        return new DistancedBeerLocation(distance, beerLocation);
+                    }
+                })
+                .toList();
+    }
+
+    private Iterable<Integer> getDistancesFlattened(MatrixData matrixData) {
+        List<Integer> distances = new ArrayList<>();
+        for (Row row : matrixData.getRows()) {
+            for (Element element : row.getElements()) {
+                if (element.getDuration() != null) {
+                    distances.add(element.getDuration().getValue());
+                } else {
+                    distances.add(0);
+                }
+            }
+        }
+        return distances;
     }
 
     private String addressFromLocation(BeerLocation l) {
