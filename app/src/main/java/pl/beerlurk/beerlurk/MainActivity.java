@@ -83,19 +83,20 @@ public class MainActivity extends AppCompatActivity {
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
-        RestAdapter adapter = new RestAdapter.Builder()
+        RestAdapter googleAdapter = new RestAdapter.Builder()
                 .setEndpoint("https://maps.googleapis.com")
                 .setConverter(new GsonConverter(gson))
                 .setLogLevel(RestAdapter.LogLevel.FULL)
                 .build();
-        MatrixApi matrixApi = adapter.create(MatrixApi.class);
-        GeocodeApi geocodeApi = adapter.create(GeocodeApi.class);
-        new BeerService(new BeerApi() {
-            @Override
-            public Observable<BeerLocationsWrapper> call(String ignore) {
-                return Observable.just(Factory.create());
-            }
-        }, matrixApi, geocodeApi)
+        RestAdapter beerAdapter = new RestAdapter.Builder()
+                .setEndpoint("http://beer-lurk.herokuapp.com")
+                .setConverter(new GsonConverter(gson))
+                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .build();
+        MatrixApi matrixApi = googleAdapter.create(MatrixApi.class);
+        GeocodeApi geocodeApi = googleAdapter.create(GeocodeApi.class);
+        BeerApi beerApi = beerAdapter.create(BeerApi.class);
+        new BeerService(beerApi, matrixApi, geocodeApi)
                 .call(search, myLocation)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<DistancedBeerLocation>>() {
