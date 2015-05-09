@@ -55,7 +55,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
         List<DistancedBeerLocation> all = getIntent().getParcelableArrayListExtra("all");
         for (DistancedBeerLocation l : all) {
             LatLng position = new LatLng(l.getLocation().getLatitude(), l.getLocation().getLongitude());
-            map.addMarker(new MarkerOptions().position(position));
+            map.addMarker(new MarkerOptions().position(position).title(l.getBeerLocation().getAddressWithName()));
         }
     }
 }
