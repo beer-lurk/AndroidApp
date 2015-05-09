@@ -12,6 +12,7 @@ import pl.beerlurk.beerlurk.dto.BeerLocationsWrapper;
 import pl.beerlurk.beerlurk.dto.DistancedBeerLocation;
 import pl.beerlurk.beerlurk.dto.geocode.Geometry;
 import pl.beerlurk.beerlurk.dto.geocode.ResultsWrapper;
+import pl.beerlurk.beerlurk.dto.matrix.Distance;
 import pl.beerlurk.beerlurk.dto.matrix.Element;
 import pl.beerlurk.beerlurk.dto.matrix.MatrixData;
 import pl.beerlurk.beerlurk.dto.matrix.Row;
@@ -128,29 +129,29 @@ public final class BeerService {
 
     private Observable<List<DistancedBeerLocation>> mergeWithDistanceMatrix(List<BeerLocation> beerLocations, String origin, String destinations) {
         return matrixApi.call(origin, destinations)
-                .flatMapIterable(new Func1<MatrixData, Iterable<Integer>>() {
+                .flatMapIterable(new Func1<MatrixData, Iterable<Distance>>() {
                     @Override
-                    public Iterable<Integer> call(MatrixData matrixData) {
+                    public Iterable<Distance> call(MatrixData matrixData) {
                         return getDistancesFlattened(matrixData);
                     }
                 })
-                .zipWith(beerLocations, new Func2<Integer, BeerLocation, DistancedBeerLocation>() {
+                .zipWith(beerLocations, new Func2<Distance, BeerLocation, DistancedBeerLocation>() {
                     @Override
-                    public DistancedBeerLocation call(Integer distance, BeerLocation beerLocation) {
-                        return new DistancedBeerLocation(distance, beerLocation);
+                    public DistancedBeerLocation call(Distance distance, BeerLocation beerLocation) {
+                        return new DistancedBeerLocation(distance.getValue(), distance.getText(), beerLocation);
                     }
                 })
                 .toList();
     }
 
-    private Iterable<Integer> getDistancesFlattened(MatrixData matrixData) {
-        List<Integer> distances = new ArrayList<>();
+    private Iterable<Distance> getDistancesFlattened(MatrixData matrixData) {
+        List<Distance> distances = new ArrayList<>();
         for (Row row : matrixData.getRows()) {
             for (Element element : row.getElements()) {
-                if (element.getDuration() != null) {
-                    distances.add(element.getDuration().getValue());
+                if (element.getDistance() != null) {
+                    distances.add(element.getDistance());
                 } else {
-                    distances.add(0);
+                    distances.add(null);
                 }
             }
         }

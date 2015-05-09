@@ -13,6 +13,7 @@ import lombok.Value;
 public final class DistancedBeerLocation implements Parcelable {
 
     final Integer distance;
+    final String distanceFormatted;
     Location location;
     final BeerLocation beerLocation;
 
@@ -24,12 +25,14 @@ public final class DistancedBeerLocation implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeValue(this.distance);
+        dest.writeString(this.distanceFormatted);
         dest.writeParcelable(this.location, flags);
         dest.writeParcelable(this.beerLocation, flags);
     }
 
     private DistancedBeerLocation(Parcel in) {
         this.distance = (Integer) in.readValue(Integer.class.getClassLoader());
+        this.distanceFormatted = in.readString();
         this.location = in.readParcelable(Location.class.getClassLoader());
         this.beerLocation = in.readParcelable(BeerLocation.class.getClassLoader());
     }

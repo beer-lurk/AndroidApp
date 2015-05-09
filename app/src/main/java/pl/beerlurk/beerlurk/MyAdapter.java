@@ -43,6 +43,8 @@ public final class MyAdapter extends BaseAdapter {
         }
         TextView addressView = (TextView) convertView.findViewById(R.id.address);
         addressView.setText(data.get(position).getBeerLocation().getAddressWithName());
+        TextView distanceView = (TextView) convertView.findViewById(R.id.distance);
+        distanceView.setText(data.get(position).getDistanceFormatted());
         Button button = (Button) convertView.findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
