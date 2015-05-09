@@ -67,12 +67,7 @@ public final class BeerService {
                         return distancedBeerLocation.getDistance() > 0;
                     }
                 })
-                .toSortedList(new Func2<DistancedBeerLocation, DistancedBeerLocation, Integer>() {
-                    @Override
-                    public Integer call(DistancedBeerLocation distancedBeerLocation, DistancedBeerLocation distancedBeerLocation2) {
-                        return compareByDistance(distancedBeerLocation, distancedBeerLocation2);
-                    }
-                })
+                .toSortedList(getSortFunction())
                 .flatMapIterable(new Func1<List<DistancedBeerLocation>, Iterable<DistancedBeerLocation>>() {
                     @Override
                     public Iterable<DistancedBeerLocation> call(List<DistancedBeerLocation> distancedBeerLocations) {
@@ -86,12 +81,16 @@ public final class BeerService {
                         return getAddressLocation(distancedBeerLocation);
                     }
                 })
-                .toSortedList(new Func2<DistancedBeerLocation, DistancedBeerLocation, Integer>() {
-                    @Override
-                    public Integer call(DistancedBeerLocation distancedBeerLocation, DistancedBeerLocation distancedBeerLocation2) {
-                        return compareByDistance(distancedBeerLocation, distancedBeerLocation2);
-                    }
-                });
+                .toSortedList(getSortFunction());
+    }
+
+    private Func2<DistancedBeerLocation, DistancedBeerLocation, Integer> getSortFunction() {
+        return new Func2<DistancedBeerLocation, DistancedBeerLocation, Integer>() {
+            @Override
+            public Integer call(DistancedBeerLocation distancedBeerLocation, DistancedBeerLocation distancedBeerLocation2) {
+                return compareByDistance(distancedBeerLocation, distancedBeerLocation2);
+            }
+        };
     }
 
     private String concatenateAddresses(List<BeerLocation> beerLocations) {
