@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,16 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
-import pl.beerlurk.beerlurk.dto.BeerLocationsWrapper;
 import pl.beerlurk.beerlurk.dto.DistancedBeerLocation;
-import pl.beerlurk.beerlurk.dto.Factory;
 import pl.beerlurk.beerlurk.service.BeerApi;
 import pl.beerlurk.beerlurk.service.BeerService;
 import pl.beerlurk.beerlurk.service.GeocodeApi;
 import pl.beerlurk.beerlurk.service.MatrixApi;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -78,8 +74,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void doCall(String search) {
         Location myLocation = new Location("my");
-        myLocation.setLatitude(52.2237465);
-        myLocation.setLongitude(20.9476116);
+        myLocation.setLatitude(52.22037939);
+        myLocation.setLongitude(21.0086596);
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
