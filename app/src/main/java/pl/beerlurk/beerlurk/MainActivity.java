@@ -11,6 +11,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -29,9 +34,12 @@ import retrofit.converter.GsonConverter;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    public List<DistancedBeerLocation> data;
+    private List<DistancedBeerLocation> data;
+    private Location myLocation;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationListener locationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +66,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         EventBus.getDefault().register(this);
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
+        locationListener = new LocationListener() {
+
+            @Override
+            public void onLocationChanged(Location location) {
+                myLocation = location;
+            }
+        };
+    }
+
+    protected LocationRequest createLocationRequest() {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return mLocationRequest;
     }
 
     @SuppressWarnings("unused")
@@ -72,12 +101,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, locationListener);
     }
 
     private void doCall(String search) {
-        Location myLocation = new Location("my");
-        myLocation.setLatitude(52.22037939);
-        myLocation.setLongitude(21.0086596);
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
@@ -121,5 +148,20 @@ public class MainActivity extends AppCompatActivity {
     private void showList() {
         ListView listView = (ListView) findViewById(R.id.main_list);
         listView.setAdapter(new MyAdapter(data));
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, createLocationRequest(), locationListener);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 }
