@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ListView listView = (ListView) findViewById(R.id.main_list);
+        final ListView listView = (ListView) findViewById(R.id.main_list);
         final TextView emptyView = (TextView) findViewById(R.id.empty_view);
         emptyView.setText("Try to search for something");
         listView.setEmptyView(emptyView);
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
                 if (search.length() > 0) {
                     v.setHint("Last search: " + search);
                     v.setText(null);
+                    listView.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1));
                     emptyView.setText("Searching...");
                     doCall(search);
                     return true;
